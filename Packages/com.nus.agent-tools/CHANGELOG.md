@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 — 2026-10-28
 
 - **`ticket-proof` skill**: proof of work on Azure DevOps tickets for flat and VR games. Its script reads the
   board from `.claude/ticket-board.json` (or the git remote), queues stills and clips with outlines and captions,
