@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **`ticket-proof` skill**: proof of work on Azure DevOps tickets for flat and VR games. Its script reads the
+  board from `.claude/ticket-board.json` (or the git remote), queues stills and clips with outlines and captions,
+  previews the comment, and posts it with an optional move to Done. Scratch tickets (990000+) never post.
 - **`Tools~/publish.py`**: `status`, `pull`, `push` and `release <version>` (pull, bump both versions, date the
   CHANGELOG, commit, push, tag). **CONTRIBUTING.md** says how to send a change and ship an urgent fix.
 - **Ready to move accounts:** the repository's address is `package.json`'s `repository` field, which `publish.py`
