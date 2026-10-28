@@ -15,5 +15,9 @@
   ],
   "author": {
     "name": "NUS ADGBL team"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rhnus/nus-unity-toolkit.git"
   }
 }

@@ -64,7 +64,8 @@ python Packages/com.nus.agent-tools/Tools~/publish.py release 0.1.1     # pull, 
 
 Describe the change under `## Unreleased` in the package CHANGELOG first; `release` refuses without it. Projects then
 change the tag in their manifest and update the plugin. How to send a change, and the urgent-fix route, are in
-[CONTRIBUTING.md](CONTRIBUTING.md).
+[CONTRIBUTING.md](CONTRIBUTING.md); moving the repository to another GitHub account
+without breaking any project is in [MIGRATION.md](MIGRATION.md).
 
 Every file in the package except under folders ending in `~` needs a `.meta` with a fixed GUID: a package installed
 from git is read-only, so Unity can't create them.

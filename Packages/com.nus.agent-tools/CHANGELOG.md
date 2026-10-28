@@ -4,6 +4,8 @@
 
 - **`Tools~/publish.py`**: `status`, `pull`, `push` and `release <version>` (pull, bump both versions, date the
   CHANGELOG, commit, push, tag). **CONTRIBUTING.md** says how to send a change and ship an urgent fix.
+- **Ready to move accounts:** the repository's address is `package.json`'s `repository` field, which `publish.py`
+  reads. **MIGRATION.md** is the step-by-step move to another GitHub account without breaking any project.
 
 ## 0.1.0
 

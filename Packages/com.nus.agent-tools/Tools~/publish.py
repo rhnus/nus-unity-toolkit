@@ -16,14 +16,28 @@ committed: commits name the package's files explicitly, and nothing here needs a
 """
 import argparse
 import datetime
+import json
 import os
 import re
 import subprocess
 import sys
 
-REMOTE = os.environ.get("PUBLISH_REMOTE", "https://github.com/rhnus/nus-unity-toolkit.git")
-BRANCH = "main"
 PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BRANCH = "main"
+
+
+def repository_url():
+    """package.json's "repository" field: the one place to change when the repository moves (MIGRATION.md)."""
+    with open(os.path.join(PACKAGE_DIR, "package.json"), encoding="utf-8") as handle:
+        repository = json.load(handle).get("repository")
+    url = repository.get("url") if isinstance(repository, dict) else repository
+    if not url:
+        sys.exit('package.json has no "repository": { "url": "..." } to publish to.')
+    return re.sub(r"^git\+", "", url)
+
+
+# PUBLISH_REMOTE overrides it, for testing against a scratch repository.
+REMOTE = os.environ.get("PUBLISH_REMOTE") or repository_url()
 VERSION_FILES = ["package.json", "Skills~/.claude-plugin/plugin.json"]
 CHANGELOG = "CHANGELOG.md"
 
