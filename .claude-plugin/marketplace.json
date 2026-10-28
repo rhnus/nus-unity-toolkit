@@ -1,0 +1,13 @@
+{
+  "name": "nus-unity-toolkit",
+  "owner": {
+    "name": "NUS ADGBL team"
+  },
+  "plugins": [
+    {
+      "name": "nus-unity-toolkit",
+      "source": "./Packages/com.nus.agent-tools/Skills~",
+      "description": "Skills for any Unity project: scene-safe edits, wiring diagnosis, compile checks, shared-editor test runs, JSON binding audits, content out of scenes."
+    }
+  ]
+}
