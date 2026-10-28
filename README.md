@@ -55,12 +55,16 @@ Skills from the plugin appear as `/nus-unity-toolkit:<skill>`. A copy of the sam
 When moving a skill here, strip project specifics (paths, scene names, ticket numbers, people), keep its scripts in
 its own folder and reference them as `${CLAUDE_SKILL_DIR}/scripts/…`, and put any C# it calls in the package.
 
-## Releasing
+## Releasing and contributing
 
-1. Bump `version` in `Packages/com.nus.agent-tools/package.json` **and**
-   `Packages/com.nus.agent-tools/Skills~/.claude-plugin/plugin.json`, and add a CHANGELOG entry.
-2. Tag the commit `vX.Y.Z` and push the tag.
-3. Projects move to it by changing the tag in their manifest, and by `claude plugin update`.
+```
+python Packages/com.nus.agent-tools/Tools~/publish.py status            # ahead of or behind GitHub
+python Packages/com.nus.agent-tools/Tools~/publish.py release 0.1.1     # pull, bump both versions, date the CHANGELOG, commit, push, tag
+```
 
-Every file in the package except under `Skills~/` needs a `.meta` with a fixed GUID: a package installed from git is
-read-only, so Unity can't create them.
+Describe the change under `## Unreleased` in the package CHANGELOG first; `release` refuses without it. Projects then
+change the tag in their manifest and update the plugin. How to send a change, and the urgent-fix route, are in
+[CONTRIBUTING.md](CONTRIBUTING.md).
+
+Every file in the package except under folders ending in `~` needs a `.meta` with a fixed GUID: a package installed
+from git is read-only, so Unity can't create them.

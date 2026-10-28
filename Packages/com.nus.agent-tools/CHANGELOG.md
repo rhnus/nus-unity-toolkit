@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **`Tools~/publish.py`**: `status`, `pull`, `push` and `release <version>` (pull, bump both versions, date the
+  CHANGELOG, commit, push, tag). **CONTRIBUTING.md** says how to send a change and ship an urgent fix.
+
 ## 0.1.0
 
 First release, moved out of ADGBL's `Assets/Editor/AgentTools` and `.claude/skills`.
