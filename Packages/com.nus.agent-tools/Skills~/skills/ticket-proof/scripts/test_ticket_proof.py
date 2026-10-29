@@ -146,3 +146,130 @@ def test_a_clip_cannot_be_outlined(project):
     with pytest.raises(SystemExit) as err:
         T.attach(990001, [str(clip)], [], "", outlines=["1,1,5,5"])
     assert "images only" in str(err.value)
+
+
+# --- pr: a session folder from the Unity dev tools ------------------------------------
+
+REPORT_PR = ("## Proof\n\n"
+             "- Press test: [#3-press-test_button.png](%233-press-test_button.png)\n"
+             "- Grab: [grab clip](%234-grab.mp4)\n"
+             "- Spec: [docs](https://example.com/docs) and [top](#proof)\n")
+
+
+@pytest.fixture
+def session(project):
+    folder = project / "session"
+    folder.mkdir()
+    (folder / "proof.json").write_text(json.dumps({
+        "pr": 45, "report": "report.md", "prBlock": "report-pr.md", "screenshots": ["#3-press-test_button.png"],
+        "recordings": ["#4-grab.mp4"], "events": 12, "prBlockChars": 200, "session": "s-001", "buildStamp": "b42"}))
+    (folder / "report.md").write_text("# Report")
+    (folder / "report-pr.md").write_text(REPORT_PR)
+    (folder / "#3-press-test_button.png").write_bytes(b"\x89PNG")
+    (folder / "#4-grab.mp4").write_bytes(b"video")
+    return folder
+
+
+class FakeDevOps:
+    """Stands in for the HTTP layer and records what would have been sent."""
+
+    def __init__(self, monkeypatch):
+        self.calls = []
+        monkeypatch.setattr(T, "request", self.request)
+
+    def request(self, method, url, body=None, content_type="application/json"):
+        self.calls.append((method, url, body))
+        if method == "GET" and "/threads/" in url:
+            return {"comments": [{"content": self.posted}]}
+        if method == "GET":
+            return {"pullRequestId": 45, "title": "Hand wash cue", "status": "active",
+                    "repository": {"id": "repo-1", "name": "vr-game"}}
+        if "/attachments/" in url:
+            return {"url": "https://dev.azure.com/contoso/_apis/git/repositories/repo-1/pullRequests/45/attachments/"
+                           + url.split("/attachments/")[1].split("?")[0]}
+        self.posted = body["comments"][0]["content"]
+        return {"id": 7}
+
+    def sent(self):
+        return [c for c in self.calls if c[0] == "POST"]
+
+
+def test_links_to_session_files_become_attachment_urls_and_pngs_go_inline():
+    urls = {"#3-press-test_button.png": "https://x/a.png", "#4-grab.mp4": "https://x/g.mp4"}
+    out = T.rewrite_links(REPORT_PR, urls)
+    assert "![#3-press-test_button.png](<https://x/a.png>)" in out
+    assert "[grab clip](<https://x/g.mp4>)" in out and "![grab clip]" not in out
+    assert "[docs](https://example.com/docs)" in out and "[top](#proof)" in out
+    assert "(%23" not in out
+
+
+def test_already_inline_images_are_not_given_a_second_bang():
+    out = T.rewrite_links("![shot](%233-a.png)", {"#3-a.png": "https://x/a.png"})
+    assert out == "![shot](<https://x/a.png>)"
+
+
+def test_pr_defaults_to_the_session_s_pull_request_and_refuses_a_different_one(session):
+    assert T.load_session(session)[1] == 45
+    with pytest.raises(SystemExit) as err:
+        T.load_session(session, 46)
+    assert "!45" in str(err.value)
+
+
+def test_pr_without_confirm_previews_and_sends_nothing(session, project, monkeypatch, capsys):
+    fake = FakeDevOps(monkeypatch)
+    T.main(["pr", "--session", str(session)])
+    shown = capsys.readouterr().out
+    assert fake.calls == []
+    assert "pull request !45" in shown
+    assert "#3-press-test_button.png" in shown and "KB" in shown
+    assert "![#3-press-test_button.png](<attachment://%233-press-test_button.png>)" in shown
+    assert "Not posted" in shown
+    assert not (session / T.PROOF_POSTED).exists()
+
+
+def test_pr_confirm_uploads_every_file_posts_one_thread_and_records_it(session, monkeypatch, capsys):
+    fake = FakeDevOps(monkeypatch)
+    T.main(["pr", "45", "--session", str(session), "--confirm"])
+    uploads = [c for c in fake.sent() if "/attachments/" in c[1]]
+    assert len(uploads) == 3   # the png, the mp4 and report.md
+    assert any("%233-press-test_button.png" in c[1] for c in uploads)
+    threads = [c for c in fake.sent() if c[1].split("?")[0].endswith("/threads")]
+    assert len(threads) == 1
+    comment = threads[0][2]["comments"][0]["content"]
+    assert "![#3-press-test_button.png](<https://dev.azure.com/" in comment
+    assert "[Full report (report.md)](<https://dev.azure.com/" in comment
+    assert T.MARKER in comment and "(%23" not in comment
+    result = json.loads(capsys.readouterr().out)
+    assert result["threadId"] == 7
+    record = json.loads((session / T.PROOF_POSTED).read_text())["posts"][0]
+    assert record["threadId"] == 7 and record["pr"] == 45
+    assert set(record["attachments"]) == {"#3-press-test_button.png", "#4-grab.mp4", "report.md"}
+
+
+def test_a_second_post_for_the_same_session_needs_again(session, monkeypatch):
+    fake = FakeDevOps(monkeypatch)
+    T.main(["pr", "--session", str(session), "--confirm"])
+    fake.calls.clear()
+    with pytest.raises(SystemExit) as err:
+        T.main(["pr", "--session", str(session), "--confirm"])
+    assert "--again" in str(err.value) and fake.calls == []
+    T.main(["pr", "--session", str(session), "--confirm", "--again"])
+    assert len(json.loads((session / T.PROOF_POSTED).read_text())["posts"]) == 2
+
+
+def test_a_session_file_over_the_cap_is_refused_before_anything_is_sent(session, monkeypatch):
+    fake = FakeDevOps(monkeypatch)
+    monkeypatch.setattr(T, "MAX_UPLOAD_BYTES", 3)
+    with pytest.raises(SystemExit) as err:
+        T.main(["pr", "--session", str(session), "--confirm"])
+    assert "MB" in str(err.value) and fake.calls == []
+
+
+def test_also_ticket_posts_the_same_files_after_the_pull_request(session, project, monkeypatch, capsys):
+    FakeDevOps(monkeypatch)
+    posted = []
+    monkeypatch.setattr(T, "cmd_post", lambda a: posted.append((a.ticket, a.again)))
+    T.main(["pr", "--session", str(session), "--confirm", "--also-ticket", "12"])
+    assert posted == [(12, False)]
+    assert len(T.pending(T.load_manifest(12))) == 2
+    assert json.loads((session / T.PROOF_POSTED).read_text())["posts"][0]["alsoTicket"] == 12

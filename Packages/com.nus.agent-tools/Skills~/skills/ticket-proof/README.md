@@ -33,6 +33,11 @@ Moving the project to another board means editing this file; nothing else change
 
 Check it with `python <skill folder>/scripts/ticket_proof.py doctor`.
 
+## Session folders (`pr`)
+
+`ticket_proof.py pr <number> --session <folder>` posts a folder written by the Unity dev tools. It needs no extra
+settings: the repository comes from the pull request itself. Without `--confirm` it only previews.
+
 ## Tests
 
 `python -m pytest scripts/test_ticket_proof.py` (no network).

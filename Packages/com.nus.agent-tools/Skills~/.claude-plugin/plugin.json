@@ -1,6 +1,6 @@
 {
   "name": "nus-unity-toolkit",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Claude Code skills for any Unity project: safe scene and prefab edits, wiring diagnosis, compile checks while the editor is open, EditMode test runs in a shared editor, JSON binding audits, and keeping content out of scenes.",
   "author": {
     "name": "NUS ADGBL team"

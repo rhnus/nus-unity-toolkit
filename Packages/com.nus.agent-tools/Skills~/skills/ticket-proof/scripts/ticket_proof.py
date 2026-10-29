@@ -7,6 +7,7 @@
     python ticket_proof.py status  --ticket 123                 # what is waiting to post (no network)
     python ticket_proof.py remove  --ticket 123 --file <name>   # drop one waiting capture
     python ticket_proof.py post    --ticket 123 --note "..." [--body summary.html] [--preview] [--done]
+    python ticket_proof.py pr      45 --session <folder> [--confirm] [--also-ticket 123] [--again]
 
 Every command but doctor and tickets takes `--pr 45` in place of `--ticket 123`, for a pull request in the same
 project: `lookup` adds its linked tickets, and `post` adds one comment thread to the pull request.
@@ -17,7 +18,8 @@ the repository's `origin` remote. Sign-in: the Azure CLI (`az login`); no token 
 Captures wait in <capturesFolder>/<ticket>/ (or pr-<number>/; default Artifacts/TicketProof) with a manifest.json,
 until `post` sends them as one comment: images inline, clips as links. On a ticket every file is also on its
 Attachments tab; on a pull request the files are its attachments and the comment's thread starts closed, so it
-never holds up a comment-resolution policy. Tickets from 990000 up are scratch: anything may be filed there for a
+never holds up a comment-resolution policy. `pr` posts a whole session folder written by the Unity dev tools to a
+pull request: it only previews unless `--confirm` is given. Tickets from 990000 up are scratch: anything may be filed there for a
 test, and nothing posts from them.
 """
 
@@ -46,6 +48,9 @@ FIRST_SCRATCH_TICKET = 990000
 IMAGE_TYPES = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
 VIDEO_TYPES = {".mp4", ".mov", ".webm", ".m4v"}
 MAX_UPLOAD_BYTES = 60 * 1024 * 1024
+MAX_PR_COMMENT_CHARS = 150000
+PROOF_POSTED = "proof-posted.json"
+LINK_RE = re.compile(r"(!?)\[([^\]]*)\]\((<[^>]*>|[^)\s]+)\)")
 WORK_ITEM_FIELDS = ["System.Title", "System.State", "System.WorkItemType", "System.IterationPath",
                     "System.AssignedTo", "System.AreaPath"]
 REMOTE_RE = re.compile(r"https://(?:[^@/]+@)?dev\.azure\.com/([^/]+)/([^/]+)/_git/[^/]+?/?$")
@@ -622,6 +627,84 @@ def post_pr_thread(summary, markdown):
     return thread["id"], ((stored.get("comments") or [{}])[0].get("content") or "")
 
 
+# --- a session folder from the Unity dev tools, posted to a pull request ---------------
+
+def read_json(path, what):
+    try:
+        return json.loads(pathlib.Path(path).read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError) as err:
+        fail(f"Could not read {what} at {path}.", str(err))
+
+
+def entry_name(entry):
+    """A file name from a proof.json list entry: a string, or an object with file, name or path."""
+    if isinstance(entry, dict):
+        entry = entry.get("file") or entry.get("name") or entry.get("path") or ""
+    return os.path.basename(str(entry).replace("\\", "/"))
+
+
+def load_session(folder, number=None):
+    """(proof.json, pr number, files) of a session folder; the files are its screenshots and recordings in order."""
+    folder = pathlib.Path(folder)
+    if not folder.is_dir():
+        fail(f"There is no session folder at {folder}.")
+    proof = read_json(folder / "proof.json", "proof.json")
+    in_proof = proof.get("pr")
+    if number is None:
+        if in_proof is None:
+            fail("No pull request given, and proof.json names none. Pass the pull request number.")
+        number = int(in_proof)
+    elif in_proof is not None and int(in_proof) != int(number):
+        fail(f"This session was written for pull request !{in_proof}, not !{number}. "
+             "Pass the right number, or have the dev tools write the session again.")
+    names = [entry_name(e) for e in (proof.get("screenshots") or []) + (proof.get("recordings") or [])]
+    for name in names + ["report-pr.md", "report.md"]:
+        if not (folder / name).is_file():
+            fail(f"The session folder has no {name}.", str(folder))
+    for name in names + ["report.md"]:
+        if os.path.getsize(folder / name) > MAX_UPLOAD_BYTES:
+            fail(f"{name} is over {MAX_UPLOAD_BYTES // (1024 * 1024)} MB. Trim or compress it first.")
+    for name in names:
+        if kind_of(name) is None:
+            fail(f"{name} is not an image or a clip ({', '.join(sorted(IMAGE_TYPES | VIDEO_TYPES))}).")
+    return proof, int(number), names
+
+
+def rewrite_links(markdown, urls):
+    """Every link to a session file becomes the file's attachment URL: images inline, clips and others as links.
+    Links to anything else (web addresses, anchors) are left alone."""
+    def swap(match):
+        _, text, target = match.groups()
+        raw = urllib.parse.unquote(target[1:-1] if target.startswith("<") else target)
+        name = os.path.basename(raw.replace("\\", "/"))
+        if name not in urls or raw.startswith(("http://", "https://")):
+            return match.group(0)
+        bang = "!" if kind_of(name) == "image" else ""
+        return f"{bang}[{text or name}](<{urls[name]}>)"
+    return LINK_RE.sub(swap, markdown)
+
+
+def build_pr_comment(report_pr, urls, proof):
+    """The session's report-pr.md with its file links pointing at the attachments, then the full report's link."""
+    parts = [rewrite_links(report_pr.strip(), urls), f"[Full report (report.md)](<{urls['report.md']}>)"]
+    footer = " · ".join(p for p in (MARKER, markdown_text(str(proof.get("buildStamp") or "")),
+                                    markdown_text(str(proof.get("session") or ""))) if p)
+    parts.append(f"*{footer}*")
+    return "\n\n".join(parts)
+
+
+def read_posted(session):
+    path = pathlib.Path(session) / PROOF_POSTED
+    return read_json(path, PROOF_POSTED) if path.is_file() else {"posts": []}
+
+
+def write_posted(session, record):
+    path = pathlib.Path(session) / PROOF_POSTED
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
+    os.replace(tmp, path)
+
+
 def mark_done(ticket, item):
     """Moves the ticket to its type's completed state, looked up because processes name it differently."""
     states = request("GET", api_url(f"wit/workitemtypes/{urllib.parse.quote(item['type'])}/states"))["value"]
@@ -836,6 +919,64 @@ def cmd_post(args):
     out(result)
 
 
+def cmd_pr(args):
+    session = pathlib.Path(args.session)
+    proof, number, names = load_session(session, args.number)
+    if args.also_ticket is not None and args.also_ticket >= FIRST_SCRATCH_TICKET and args.confirm:
+        fail(f"#{args.also_ticket} is a scratch ticket for tests; nothing posts from it.")
+    posted = read_posted(session)
+    if posted.get("posts") and args.confirm and not args.again:
+        last = posted["posts"][-1]
+        fail(f"This session was already posted to pull request !{last.get('pr')} (thread {last.get('threadId')}). "
+             "Pass --again only if it adds something new.")
+    report_pr = (session / "report-pr.md").read_text(encoding="utf-8-sig")
+    sizes = {n: os.path.getsize(session / n) for n in [*names, "report.md"]}
+
+    if not args.confirm:
+        # Placeholders stand in for the attachment URLs, which exist only once the files are uploaded.
+        urls = {n: "attachment://" + urllib.parse.quote(n) for n in sizes}
+        markdown = build_pr_comment(report_pr, urls, proof)
+        print(f"Preview only. Target: pull request !{number} in {board()['project']}. Nothing is sent.")
+        if posted.get("posts"):
+            print(f"Note: this session was already posted (thread {posted['posts'][-1].get('threadId')}); posting again needs --again.")
+        print("\nFiles to upload as attachments:")
+        for n, size in sizes.items():
+            print(f"  {n}  ({size / 1024:.1f} KB)")
+        if args.also_ticket is not None:
+            print(f"\nThen the same files go to ticket #{args.also_ticket}.")
+        print(f"\nComment ({len(markdown)} characters; attachment:// stands for the URL given on upload):\n")
+        print(markdown)
+        print("\nNot posted. Re-run with --confirm to post.")
+        return
+
+    summary = pr_summary(get_pull_request(number))
+    urls = {n: upload_to_pr(summary, session / n, n) for n in sizes}
+    markdown = build_pr_comment(report_pr, urls, proof)
+    if len(markdown) > MAX_PR_COMMENT_CHARS:
+        fail(f"The comment is {len(markdown)} characters; pull request comments hold {MAX_PR_COMMENT_CHARS}. Shorten report-pr.md.")
+    thread_id, stored = post_pr_thread(summary, markdown)
+    if MARKER not in stored or stored.count("![") < markdown.count("!["):
+        fail(f"Thread {thread_id} on {name_of(pr_key(number))} was saved without its marker or images. "
+             "Check the pull request before posting again.")
+    record = {"pr": number, "threadId": thread_id, "url": f"{summary['url']}?discussionId={thread_id}",
+              "postedAt": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), "attachments": urls}
+    posted.setdefault("posts", []).append(record)
+    write_posted(session, posted)   # before the optional ticket post, so a failure there never allows a second PR post
+    result = {"target": name_of(pr_key(number)), "title": summary["title"], "threadId": thread_id, "files": len(names),
+              "url": record["url"], "recorded": str(session / PROOF_POSTED)}
+    if args.also_ticket is not None:
+        ticket = args.also_ticket
+        captions = [""] * len(names)
+        attach(ticket, [str(session / n) for n in names], captions, str(proof.get("session") or ""),
+               allow_duplicate=args.again)
+        cmd_post(argparse.Namespace(ticket=ticket, pr=None, note=f"Proof on pull request !{number}", body=None,
+                                    preview=False, dry_run=False, done=False, again=args.again))
+        record["alsoTicket"] = ticket
+        write_posted(session, posted)
+        result["alsoTicket"] = ticket
+    out(result)
+
+
 def add_target(p):
     group = p.add_mutually_exclusive_group(required=True)
     group.add_argument("--ticket", type=int)
@@ -885,6 +1026,14 @@ def main(argv=None):
     p.add_argument("--done", action="store_true", help="After posting, move the ticket to its finished state.")
     p.add_argument("--again", action="store_true", help="Post even though the ticket or pull request is finished and already has proof.")
     p.set_defaults(func=cmd_post)
+
+    p = sub.add_parser("pr", help="Post a Unity dev tools session folder to a pull request. Previews unless --confirm.")
+    p.add_argument("number", nargs="?", type=int, help="The pull request; defaults to the one in proof.json.")
+    p.add_argument("--session", required=True, help="The session folder holding proof.json, report.md and report-pr.md.")
+    p.add_argument("--confirm", action="store_true", help="Upload and post. Without it nothing is sent.")
+    p.add_argument("--also-ticket", type=int, help="After the pull request post, post the same files to this ticket.")
+    p.add_argument("--again", action="store_true", help="Post even though this session was already posted.")
+    p.set_defaults(func=cmd_pr)
 
     args = parser.parse_args(argv)
     args.func(args)

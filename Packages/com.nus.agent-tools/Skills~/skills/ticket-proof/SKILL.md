@@ -1,6 +1,6 @@
 ---
 name: ticket-proof
-description: Prepare and post proof of work (screenshots and short clips) to an Azure DevOps ticket or pull request, for flat and VR Unity games alike. Reads the ticket or pull request (and its linked tickets), works out what each acceptance item needs to show, captures the Game view or takes files the person already has, outlines the change, writes honest captions, previews the comment, and posts it (optionally moving the ticket to Done) only when asked. Use when asked to post proof, screenshots or a recording to a ticket or a pull request, to capture the Game view for a PR comment, to show reviewers what a PR changes, to show a ticket's fix, to close a ticket with evidence, or to list this sprint's tickets.
+description: Prepare and post proof of work (screenshots and short clips) to an Azure DevOps ticket or pull request, for flat and VR Unity games alike. Reads the ticket or pull request (and its linked tickets), works out what each acceptance item needs to show, captures the Game view or takes files the person already has, outlines the change, writes honest captions, previews the comment, and posts it (optionally moving the ticket to Done) only when asked. Use when asked to post a Unity dev tools session folder to a pull request (preview first, post only on --confirm), to post proof, screenshots or a recording to a ticket or a pull request, to capture the Game view for a PR comment, to show reviewers what a PR changes, to show a ticket's fix, to close a ticket with evidence, or to list this sprint's tickets.
 ---
 
 # Proof of work on a ticket or pull request
@@ -117,6 +117,20 @@ check it, and reports the comment and the state.
 Markdown (so `--body` is Markdown, a `.md` file), already closed so it never holds up a comment-resolution policy.
 It reads the thread back, and returns its link. A `warning` in the result means the capture was made on a different
 commit from the pull request's head: recapture, or say so in the report. `--done` is refused.
+
+## PR proof (a session from the Unity dev tools)
+
+For proof tested in a headset: the person tests, the Unity dev tools write a session folder (`proof.json`,
+`report.md`, `report-pr.md`, PNGs, optional MP4s), then:
+
+1. `python "$TP" pr N --session <folder>` (N may be omitted; proof.json names it). This **only previews**: the
+   target, the files with sizes, and the exact comment. Show it to the person.
+2. When the person says to post: the same command plus `--confirm`. **Never add `--confirm` unasked.**
+   It uploads every file as a pull request attachment, rewrites the report's links to them (PNGs inline), posts one
+   comment thread, reads it back, and writes `<folder>/proof-posted.json`. Report the returned `url`.
+3. `--also-ticket T` (with `--confirm`) then posts the same files to ticket T by the usual ticket flow.
+
+A session already posted is refused unless `--again`. A number that differs from proof.json's is refused.
 
 ## 6. Report
 
