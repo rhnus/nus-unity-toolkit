@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 — 2026-10-29
+
+- **`ticket_proof.py pr <number> --session <folder>`**: posts a session folder written by the Unity dev tools
+  (`proof.json`, `report.md`, `report-pr.md`, screenshots, recordings) to a pull request. It only previews unless
+  `--confirm` is given; the preview prints the target, the files with sizes and the exact comment. `--confirm`
+  uploads every file as a pull request attachment, rewrites the report's file links to the attachment URLs (PNGs
+  inline), posts one comment thread, reads it back and records the thread and URLs in `<session>/proof-posted.json`.
+  A session already posted needs `--again`. `--also-ticket N` then posts the same files to that ticket. Existing
+  commands are unchanged.
+
 ## 0.3.0 — 2026-10-29
 
 - **`ticket-proof` takes pull requests**: `--pr N` in place of `--ticket N` on `lookup`, `attach`, `status`,
