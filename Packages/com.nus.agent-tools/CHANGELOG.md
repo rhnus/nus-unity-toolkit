@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-10-29
 
 - **`ticket-proof` takes pull requests**: `--pr N` in place of `--ticket N` on `lookup`, `attach`, `status`,
   `remove` and `post`. `lookup --pr` gives the pull request's branches, head commit, reviewers, description, linked
