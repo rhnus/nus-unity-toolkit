@@ -11,7 +11,7 @@ matching version. Unity ignores this folder (its name ends in `~`).
 | `run-unity-tests` | Runs EditMode tests in a shared editor without blocking it; reports only new failures | the `com.nus.agent-tools` package, Unity MCP |
 | `json-binding-audit` | Finds authored JSON keys no C# field reads | Python 3 |
 | `keep-content-out-of-scenes` | Designs features so copy and per-step content live in data, and audits a scene for content that should move | Python 3 |
-| `ticket-proof` | Proof of work on an Azure DevOps ticket: reads it, captures the Game view or takes your files (stills and clips, flat or VR), outlines, captions, previews, posts and sets Done on request | Python 3, the Azure CLI, `.claude/ticket-board.json` |
+| `ticket-proof` | Proof of work on an Azure DevOps ticket or pull request: reads it, captures the Game view or takes your files (stills and clips, flat or VR), outlines, captions, previews, posts (to a PR as one closed comment thread) and sets a ticket Done on request | Python 3, the Azure CLI, `.claude/ticket-board.json` |
 
 The folder is a Claude Code plugin (`.claude-plugin/plugin.json` plus `skills/`). Skills appear as
 `/nus-unity-toolkit:<skill>`; Claude also picks them up on its own from their descriptions.

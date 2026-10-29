@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **`ticket-proof` takes pull requests**: `--pr N` in place of `--ticket N` on `lookup`, `attach`, `status`,
+  `remove` and `post`. `lookup --pr` gives the pull request's branches, head commit, reviewers, description, linked
+  tickets and comments. `post --pr` uploads the files as the pull request's attachments and posts one Markdown
+  comment thread, closed so it never holds up a comment-resolution policy, and warns when the capture's commit is
+  not the pull request's head. Captures wait in `pr-N/`. Ticket behaviour is unchanged.
+
 ## 0.2.0 — 2026-10-28
 
 - **`ticket-proof` skill**: proof of work on Azure DevOps tickets for flat and VR games. Its script reads the

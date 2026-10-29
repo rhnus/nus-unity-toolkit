@@ -1,6 +1,6 @@
 # ticket-proof: setup
 
-Posts proof of work to Azure DevOps tickets. Needs Python 3.9+, Git, the Azure CLI (`az login` once per machine), and
+Posts proof of work to Azure DevOps tickets and pull requests. Needs Python 3.9+, Git, the Azure CLI (`az login` once per machine), and
 Pillow only for outlines and crops (`pip install pillow`).
 
 ## Which board
@@ -15,6 +15,9 @@ Put `.claude/ticket-board.json` in the project and commit it:
 ```
 
 Without the file, the board is the Azure DevOps project of the repository's `origin` remote.
+
+Pull requests (`--pr N`) are looked up in the same project, in any of its repositories. Posting on one needs the
+repository's **Contribute to pull requests** permission, which project Contributors have by default.
 
 Optional fields:
 
