@@ -188,6 +188,9 @@ def plan(root, targets, skills, version):
             for rel in sorted(have - set(want)):
                 changes.append(("remove", f"{base}/{name}/{rel}"))
         for name in stamp.get("skills", []):
+            if (not isinstance(name, str) or not name or name in {".", ".."}
+                    or any(char in name for char in ("/", "\\", ":"))):
+                fail(f"Invalid skill name in {base}/{STAMP}: {name!r}.")
             if name not in skills and (root / base / name).exists():
                 changes.append(("remove", f"{base}/{name}"))
         stamp_data = (json.dumps({"toolkit": version, "skills": sorted(n for n in skills
