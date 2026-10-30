@@ -102,7 +102,7 @@ def test_a_skill_dropped_from_the_toolkit_is_removed_from_the_project(skills, pr
     assert (project / ".github/skills/editor-skill").is_dir()
 
 
-def test_a_tampered_stamp_cannot_delete_outside_the_skills_directory(skills, project):
+def test_a_stamp_entry_cannot_escape_the_skills_directory(skills, project):
     run(project)
     assets = project / "Assets"
     assets.mkdir()
@@ -114,6 +114,7 @@ def test_a_tampered_stamp_cannot_delete_outside_the_skills_directory(skills, pro
         run(project)
 
     assert (assets / "keep.txt").read_text() == "keep"
+    assert (project / ".github/skills/plain-skill").is_dir()
 
 
 def test_off_removes_only_what_the_export_wrote(skills, project):
