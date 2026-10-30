@@ -102,6 +102,20 @@ def test_a_skill_dropped_from_the_toolkit_is_removed_from_the_project(skills, pr
     assert (project / ".github/skills/editor-skill").is_dir()
 
 
+def test_a_tampered_stamp_cannot_delete_outside_the_skills_directory(skills, project):
+    run(project)
+    assets = project / "Assets"
+    assets.mkdir()
+    (assets / "keep.txt").write_text("keep")
+    stamp = project / ".github/skills" / E.STAMP
+    stamp.write_text(json.dumps({"skills": ["../../Assets"]}))
+
+    with pytest.raises(SystemExit, match="Invalid skill name"):
+        run(project)
+
+    assert (assets / "keep.txt").read_text() == "keep"
+
+
 def test_off_removes_only_what_the_export_wrote(skills, project):
     (project / "AGENTS.md").write_text("# Rules\n")
     own = project / ".github/skills/our-skill"
