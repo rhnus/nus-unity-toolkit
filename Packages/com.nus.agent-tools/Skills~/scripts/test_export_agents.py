@@ -114,6 +114,15 @@ def test_off_removes_only_what_the_export_wrote(skills, project):
     assert not (project / ".github/skills/plain-skill").exists()
 
 
+def test_check_with_off_is_refused_and_removes_nothing(skills, project):
+    run(project)
+    before = sorted(p.relative_to(project).as_posix() for p in project.rglob("*"))
+    with pytest.raises(SystemExit) as err:
+        run(project, "--check", "--off")
+    assert err.value.code == 2
+    assert sorted(p.relative_to(project).as_posix() for p in project.rglob("*")) == before
+
+
 def test_agents_md_alone_is_refused_because_it_lists_the_copies(skills, project):
     with pytest.raises(SystemExit) as err:
         run(project, "--targets", "agents-md")

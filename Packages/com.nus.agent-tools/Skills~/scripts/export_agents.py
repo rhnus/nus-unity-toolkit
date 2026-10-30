@@ -250,8 +250,9 @@ def main(argv=None):
     parser.add_argument("--project", help="The project's root folder. Defaults to the git repository you are in.")
     parser.add_argument("--targets", nargs="+", choices=TARGETS,
                         help=f"Where to write: {', '.join(TARGETS)}. Default: {' '.join(DEFAULT_TARGETS)}.")
-    parser.add_argument("--check", action="store_true", help="Change nothing; exit 1 if the copies are out of date.")
-    parser.add_argument("--off", action="store_true", help="Remove the copies and the AGENTS.md section this wrote.")
+    mode = parser.add_mutually_exclusive_group()   # --check must never fall through to --off's removals
+    mode.add_argument("--check", action="store_true", help="Change nothing; exit 1 if the copies are out of date.")
+    mode.add_argument("--off", action="store_true", help="Remove the copies and the AGENTS.md section this wrote.")
     args = parser.parse_args(argv)
 
     root = project_root(args.project)
