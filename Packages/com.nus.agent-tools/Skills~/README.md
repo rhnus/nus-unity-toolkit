@@ -16,7 +16,4 @@ matching version. Unity ignores this folder (its name ends in `~`).
 The folder is a Claude Code plugin (`.claude-plugin/plugin.json` plus `skills/`). Skills appear as
 `/nus-unity-toolkit:<skill>`; Claude also picks them up on its own from their descriptions.
 
-For other coding agents, `scripts/export_agents.py` copies the skills into a project (`.github/skills/`,
-`.agents/skills/`, and a section in `AGENTS.md`); see the repository's README.
-
 Install steps are in the repository's README.

@@ -1,15 +1,5 @@
 # Changelog
 
-## Unreleased
-
-- **`Skills~/scripts/export_agents.py`**: copies the skills into a project for coding agents other than Claude Code.
-  Writes `.github/skills/<skill>/` (GitHub Copilot) and a marked section in `AGENTS.md` (Codex, Cursor, Gemini CLI);
-  `--targets agents` writes `.agents/skills/`. `${CLAUDE_SKILL_DIR}` becomes the copy's path from the repository
-  root, skills that call the Unity editor are marked as needing the Unity MCP bridge, and the skills' own tests and
-  caches are left out. `--check` exits 1 when the copies are out of date; `--off` removes only what it wrote. A
-  project's own skill of the same name is never overwritten. It ships in the Unity package, so it runs without
-  Claude Code.
-
 ## 0.4.0 — 2026-10-29
 
 - **`ticket_proof.py pr <number> --session <folder>`**: posts a session folder written by the Unity dev tools
