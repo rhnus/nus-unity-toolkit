@@ -43,21 +43,6 @@ assemblies exist and where tests go, which scenes are shared, and what the proje
 Skills from the plugin appear as `/nus-unity-toolkit:<skill>`. A copy of the same skill in the project's
 `.claude/skills/` still loads beside it, so remove the old copy when you adopt the plugin and keep one source.
 
-## Other coding agents
-
-The plugin is for Claude Code. For teammates on GitHub Copilot, Codex, Cursor, Gemini CLI or another agent, copy the
-skills into the project and commit them. From the project's root, with the package installed:
-
-```powershell
-python (Resolve-Path "Library/PackageCache/com.nus.agent-tools@*/Skills~/scripts/export_agents.py")
-```
-
-(`python Library/PackageCache/com.nus.agent-tools@*/Skills~/scripts/export_agents.py` in Git Bash.) It writes
-`.github/skills/<skill>/` (Copilot) and a section in `AGENTS.md` listing every skill (Codex, Cursor, Gemini CLI),
-with script paths from the repository root. `--targets agents` writes `.agents/skills/` instead; `--check` exits 1 when
-the copies are out of date (for CI); `--off` removes them. Run it again after each toolkit update. Skills marked
-*Unity bridge* need the agent to reach the Unity AI Assistant's MCP server for some steps.
-
 ## What else to share
 
 | Kind | Put it |
