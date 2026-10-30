@@ -1,7 +1,7 @@
 {
   "name": "com.nus.agent-tools",
   "displayName": "Agent Tools",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "unity": "6000.0",
   "description": "Editor tools that AI coding agents drive through the Unity MCP server, with the Claude Code skills that use them (in Skills~). AgentTestRunner runs EditMode tests in a shared editor without blocking it and reports only new failures.",
   "dependencies": {

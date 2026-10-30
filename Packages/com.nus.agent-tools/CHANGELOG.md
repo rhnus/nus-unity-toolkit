@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.0 — 2026-10-30
 
 - **`Skills~/scripts/export_agents.py`**: copies the skills into a project for coding agents other than Claude Code.
   Writes `.github/skills/<skill>/` (GitHub Copilot) and a marked section in `AGENTS.md` (Codex, Cursor, Gemini CLI);
