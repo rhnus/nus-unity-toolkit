@@ -50,10 +50,19 @@ activity.
 
 ## 2. Map the activity's beats
 
-For each beat, record what happens today with `file:line` evidence: instant or animated, what drives it
-(coroutine, `Update` lerp, Animator, a feedback component, a CanvasGroup fade), and whether it runs in
-unscaled time. Read the activity's prefab as well as its scripts: feedback components are often wired in
-the prefab, not called from code.
+Start with the scanner over the activity's scripts. It finds the common smells in under a second: scaled
+time, a new yield object per frame, searches and allocations in per-frame methods, input overrides that skip
+their base call, hard-coded colours, direct scale writes, panels popped in with `SetActive(true)`.
+
+```bash
+python ${CLAUDE_SKILL_DIR}/scripts/motion_scan.py <activity scripts folder> [<more folders>]
+```
+
+Every hit is a lead, not a finding. Then, for each beat, record what happens today with `file:line`
+evidence: instant or animated, what drives it (coroutine, `Update` lerp, Animator, a feedback component, a
+CanvasGroup fade), and whether it runs in unscaled time. Read the activity's prefab as well as its scripts:
+feedback components are often wired in the prefab, not called from code. For a large activity, hand this to a
+read-only subagent with `references/survey-brief.md` and the scanner's output.
 
 Where the editor is available, watch it too. A capture of each beat (or a short recording) catches what code
 reading misses: a flash nobody sees because something covers it, a reveal too fast to register, two
@@ -65,6 +74,17 @@ Run `references/checklist.md` for each beat, then the engineering checks at its 
 missing, inconsistent with the vocabulary, or broken (stuck colour, view jump, double animation, dead input
 during motion). `references/insights.md` holds the rules learned the hard way; check the activity against
 every one that applies.
+
+**Check a claim before it becomes a finding.** Code reading, yours or a subagent's, overstates breakage. Before
+a row says **Broken**, confirm the path that reaches it and look for what may already cover it:
+
+- a cleanup that runs anyway (`OnDestroy`, a pool that rebuilds, a teardown the caller does);
+- a base class or a sibling component doing the work the override seems to drop;
+- a flag or field that nothing reads for this activity;
+- a condition the game never meets (a time scale nothing sets to 0, a mode never entered).
+
+What survives is **Broken**; what is real but unreachable today is **Latent**; what you couldn't trace is
+**Unconfirmed**, with what would settle it.
 
 ## 4. Write the plan
 
@@ -89,8 +109,8 @@ One beat at a time. For each fix:
 - **Test the exit paths.** Every animation must leave the object at rest however it ends: finished,
   interrupted, disabled, rebuilt, or superseded by another animation. An EditMode test that drives the
   interrupt path is worth more than one for the happy path.
-- **Watch it.** Capture the beat before and after, or record a short clip (720p at 30 fps encodes far faster
-  than 1080p and is enough to judge motion). Motion can't be judged from a still.
+- **Watch it.** Capture the beat before and after, or record a short clip (`references/recording.md`).
+  Motion can't be judged from a still.
 - **Check the neighbours.** A changed hover or fade is usually shared; open one other activity that uses it.
 
 Report per beat: what changed, the evidence, and anything left for a later pass.

@@ -6,6 +6,12 @@
   drop, submit, verdict, attention, debrief, exit) against the project's motion vocabulary, writes a gap table,
   and applies only an approved plan. Ships a per-beat checklist, a list of insights from real polish passes, and a
   starter vocabulary for projects without one.
+  - `scripts/motion_scan.py` finds the common motion smells in an activity's scripts in under a second (scaled
+    time, per-frame yields, searches and allocations in `Update`, input overrides that skip their base, hard-coded
+    colours, direct scale writes, panels popped in with `SetActive(true)`), each as a lead to confirm.
+  - The audit checks every claim before calling it Broken, and adds **Latent** and **Unconfirmed** verdicts.
+  - `references/survey-brief.md` is the brief for a subagent surveying a large activity;
+    `references/recording.md` covers recording a beat with Unity's Recorder from `Unity_RunCommand`.
 
 ## 0.5.0 — 2026-10-30
 

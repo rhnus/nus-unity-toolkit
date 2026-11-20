@@ -11,7 +11,8 @@
 | … | | | | | | |
 
 Verdicts: **OK**, **Inconsistent** (exists, differs from the vocabulary), **Missing**, **Broken** (stuck,
-jumps, fights, dead input).
+jumps, fights, dead input, with the path that reaches it), **Latent** (real, but nothing reaches it today),
+**Unconfirmed** (couldn't trace it; say what would settle it).
 Sizes: **S** wiring only · **M** extract or adapt a shared component · **L** new motion code.
 
 **Shared files this plan touches:** <file> (also used by <activities>)
