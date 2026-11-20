@@ -71,6 +71,15 @@ one, add it here in the same shape: the rule, why, and how to check.
 17. **Grade colours clear on one rule across activities.** If one activity clears a wrong mark when the player
     edits the item and another keeps it until the next submit, players learn two meanings for the same red.
 
+18. **Hover ignores pointers crossing during a drag.** A dragged item turns its raycasts off so drops can land,
+    which means the pointer now crosses every placed item under it, and each one runs its hover. A hover that
+    dims neighbours or lights connectors then flickers across the board mid-drag. Gate hover effects on "no
+    drag in progress", not only on "this item isn't being dragged".
+
+19. **A hint that shows the answer must stop showing it.** A tutorial highlight on the right cell or card has
+    to clear when the tutorial ends or the player gets it right, or it keeps giving the answer away for the
+    rest of the activity. *Check:* every call that turns a hint on has a matching call that turns it off.
+
 ## Anti-patterns
 
 - Hover scaling hand-written in `Update` instead of the shared feedback component.

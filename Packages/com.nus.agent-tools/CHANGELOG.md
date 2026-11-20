@@ -9,7 +9,12 @@
   - `scripts/motion_scan.py` finds the common motion smells in an activity's scripts in under a second (scaled
     time, per-frame yields, searches and allocations in `Update`, input overrides that skip their base, hard-coded
     colours, direct scale writes, panels popped in with `SetActive(true)`), each as a lead to confirm.
-  - The audit checks every claim before calling it Broken, and adds **Latent** and **Unconfirmed** verdicts.
+  - Prefab mode: pass an activity's prefabs and the scanner scans exactly the scripts they use, plus the prefabs'
+    own wiring (two feedback components fighting over one object, inspector `SetActive` events, the feedback
+    values in use). `OnDrag` and coroutine loops count as per-frame code.
+  - The audit checks every claim before calling it Broken, and adds **Latent**, **Unconfirmed** and **Open**
+    (undecided vocabulary row) verdicts. Activities in parts get a hand-over beat between parts; rows split per
+    subject; audits without the editor list the captures to take.
   - `references/survey-brief.md` is the brief for a subagent surveying a large activity;
     `references/recording.md` covers recording a beat with Unity's Recorder from `Unity_RunCommand`.
 

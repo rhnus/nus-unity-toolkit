@@ -10,9 +10,11 @@ Read-only survey of a Unity UGUI activity's motion and feedback, for a polish au
 Do not edit anything.
 
 Activity: **<name>**. Start from `<prefab(s)>` and the scripts they use. When a prefab's script isn't obvious,
-match its `m_Script` guid against the `.cs.meta` files.
+match its `m_Script` guid against the `.cs.meta` files. Read the prefabs as well as the scripts: feedback
+components, their values and inspector events live there. If the activity runs in parts, map each part and
+the hand-over between them.
 
-Scanner leads for these files are below. Confirm or dismiss each one in context:
+Scanner leads for these prefabs and their scripts are below. Confirm or dismiss each one in context:
 
 ```
 <paste motion_scan.py output>

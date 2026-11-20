@@ -12,11 +12,22 @@
 
 Verdicts: **OK**, **Inconsistent** (exists, differs from the vocabulary), **Missing**, **Broken** (stuck,
 jumps, fights, dead input, with the path that reaches it), **Latent** (real, but nothing reaches it today),
-**Unconfirmed** (couldn't trace it; say what would settle it).
+**Unconfirmed** (couldn't trace it; say what would settle it), **Open** (the vocabulary row is undecided).
+
+**One row per subject, not per beat.** When a beat has several subjects (a pool card and a placed bar both
+hover; a refused drop and an accepted one), split it: 3a, 3b. Count verdicts by row, and say so.
+**Activities in parts:** prefix rows with the part (P1-2a, P2-2a) and add a **Hand-over** row between parts.
 Sizes: **S** wiring only · **M** extract or adapt a shared component · **L** new motion code.
 
+**Verdict counts (by row):** OK n · Inconsistent n · Missing n · Broken n · Latent n · Unconfirmed n · Open n
 **Shared files this plan touches:** <file> (also used by <activities>)
 **Left for later:** <what and why>
+
+**Captures to take** (when the activity wasn't watched, or a row is Unconfirmed):
+
+| Row | What to capture | What it settles |
+|---|---|---|
+| 2b | First show, stepped one frame at a time, frames 1-12 | Whether the other part's cards flash before the filter applies |
 
 ## Beat audit (one beat across activities)
 

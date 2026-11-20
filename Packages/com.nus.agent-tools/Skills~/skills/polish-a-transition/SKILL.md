@@ -48,25 +48,42 @@ colour, the verdict colours. Find them before judging anything. Look in the proj
 Never invent a new value for one activity. A new treatment goes into the vocabulary first, then into the
 activity.
 
+A vocabulary row may still be undecided. Score that beat against the values already in use elsewhere in the
+game, mark the verdict **Open**, and leave the fix as "waits on the vocabulary decision". Don't pick a value
+for the project.
+
 ## 2. Map the activity's beats
 
-Start with the scanner over the activity's scripts. It finds the common smells in under a second: scaled
-time, a new yield object per frame, searches and allocations in per-frame methods, input overrides that skip
-their base call, hard-coded colours, direct scale writes, panels popped in with `SetActive(true)`.
+**Scope it by prefab.** One folder often holds several activities, so start from what the player sees: the
+activity's window prefab, the prefabs it spawns (cards, nodes, bars, cells) and its result panel. Find them
+from the step that opens the activity, or by searching prefabs for the activity's main script.
+
+Run the scanner on those prefabs. It scans exactly the scripts they use, plus the prefabs themselves, which
+hold half the motion wiring: two feedback components fighting over one object, buttons and panels shown by
+inspector `SetActive` events, and the feedback values in use. In the scripts it finds scaled time, new yields
+in coroutine loops, searches and allocations in per-frame code (`Update`, `OnDrag`, coroutine loops), input
+overrides that skip their base call, hard-coded colours, direct scale writes and panels popped in with
+`SetActive(true)`.
 
 ```bash
-python ${CLAUDE_SKILL_DIR}/scripts/motion_scan.py <activity scripts folder> [<more folders>]
+python ${CLAUDE_SKILL_DIR}/scripts/motion_scan.py "<window>.prefab" "<card>.prefab" [...]
 ```
 
-Every hit is a lead, not a finding. Then, for each beat, record what happens today with `file:line`
-evidence: instant or animated, what drives it (coroutine, `Update` lerp, Animator, a feedback component, a
+A folder or a `.cs` file works too. Every hit is a lead, not a finding.
+
+**An activity in parts** (a staged build, a second round, a part that unlocks after a dialogue) gets its beats
+mapped per part, plus one more beat for each **hand-over** between parts: what changes on screen, and whether
+it eases or snaps. Hand-overs are where activities most often break.
+
+Then, for each beat, record what happens today with `file:line` evidence: instant or animated, what drives it (coroutine, `Update` lerp, Animator, a feedback component, a
 CanvasGroup fade), and whether it runs in unscaled time. Read the activity's prefab as well as its scripts:
 feedback components are often wired in the prefab, not called from code. For a large activity, hand this to a
 read-only subagent with `references/survey-brief.md` and the scanner's output.
 
 Where the editor is available, watch it too. A capture of each beat (or a short recording) catches what code
 reading misses: a flash nobody sees because something covers it, a reveal too fast to register, two
-animations fighting. Mid-transition stills need the game advanced a frame at a time.
+animations fighting. Mid-transition stills need the game advanced a frame at a time. When the editor isn't
+available, say so in the audit and list the captures that would settle what code reading couldn't.
 
 ## 3. Score each beat
 
