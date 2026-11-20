@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **`polish-a-transition` skill**: audits a UGUI activity's motion beat by beat (enter, reveal, hover, pick, drag,
+  drop, submit, verdict, attention, debrief, exit) against the project's motion vocabulary, writes a gap table,
+  and applies only an approved plan. Ships a per-beat checklist, a list of insights from real polish passes, and a
+  starter vocabulary for projects without one.
+
 ## 0.5.0 — 2026-10-30
 
 - **`Skills~/scripts/export_agents.py`**: copies the skills into a project for coding agents other than Claude Code.

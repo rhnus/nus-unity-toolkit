@@ -5,7 +5,7 @@ Reusable tools for Unity projects worked on with Claude Code. One repository, tw
 | Part | What it is | Where |
 |---|---|---|
 | **Agent Tools** | A Unity package: editor tools agents drive through the Unity MCP server, such as `AgentTestRunner` | `Packages/com.nus.agent-tools/` |
-| **Skills** | The Claude Code plugin `nus-unity-toolkit`: skills for safe scene edits, wiring diagnosis, compile checks, test runs, JSON audits, content out of scenes | `Packages/com.nus.agent-tools/Skills~/` |
+| **Skills** | The Claude Code plugin `nus-unity-toolkit`: skills for safe scene edits, wiring diagnosis, compile checks, test runs, JSON audits, content out of scenes, transition and animation polish | `Packages/com.nus.agent-tools/Skills~/` |
 
 They ship together so a skill and the C# it calls are always the same version. The repository root is also a
 Claude Code marketplace (`.claude-plugin/marketplace.json`).
